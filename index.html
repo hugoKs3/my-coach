@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coach Forme & Renforcement</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased h-screen w-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-slate-800 p-4 text-center shadow-lg z-10 flex justify-between items-center px-6">
+        <div>
+            <h1 class="text-xl font-bold text-indigo-400">Coach Virtuel</h1>
+            <p class="text-xs text-slate-400">Programme Remise en Forme (7 jours)</p>
+        </div>
+        <button id="btn-audio-toggle" class="text-xs bg-slate-700 px-3 py-1.5 rounded-full text-indigo-300 font-medium">🔊 Sound On</button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-4 relative" id="main-container">
+        
+        <!-- View: Select Day -->
+        <div id="view-select" class="flex flex-col gap-4 max-w-md mx-auto py-4">
+            <h2 class="text-2xl font-bold text-center mb-2">Choisir une séance</h2>
+            <div id="days-list" class="flex flex-col gap-3">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- View: Workout Active -->
+        <div id="view-workout" class="hidden flex-col h-full max-w-md mx-auto text-center justify-between py-4">
+            
+            <div class="glass-panel p-5 rounded-2xl shadow-xl">
+                <div class="flex justify-between items-center mb-2">
+                    <span id="step-badge" class="bg-amber-500/20 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-500/30">PRÉPARATION</span>
+                    <span id="progress-badge" class="text-xs text-slate-400 font-mono">Étape 1/10</span>
+                </div>
+                <h2 id="ex-title" class="text-2xl font-extrabold text-indigo-300 mb-1">Nom Exercice</h2>
+                <p id="ex-sub" class="text-xs text-indigo-400 font-semibold mb-3">Série 1/3</p>
+                <p id="ex-instruction" class="text-slate-300 text-sm italic min-h-[50px] flex items-center justify-center">Instructions de l'exercice...</p>
+            </div>
+
+            <!-- Timer / Actions -->
+            <div class="flex flex-col items-center justify-center flex-1 my-6">
+                <div id="timer-display" class="text-7xl font-black font-mono text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                    00:00
+                </div>
+                <div id="reps-display" class="hidden flex-col items-center justify-center">
+                    <span id="reps-count" class="text-5xl font-black text-indigo-400 mb-1">12</span>
+                    <span class="text-sm text-slate-400 font-medium uppercase tracking-wider">Répétitions à réaliser</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="w-full space-y-3">
+                <button id="btn-done" class="hidden w-full bg-emerald-500 hover:bg-emerald-600 text-white text-xl font-bold py-5 rounded-2xl shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] transition-all active:scale-95">
+                    ✅ J'ai fini ma série !
+                </button>
+                <div class="flex gap-2">
+                    <button id="btn-pause" class="flex-1 glass-panel text-white py-3 rounded-xl font-semibold transition-all active:bg-white/10 text-sm">
+                        ⏸️ Pause
+                    </button>
+                    <button id="btn-skip" class="glass-panel text-slate-300 px-4 py-3 rounded-xl font-semibold transition-all active:bg-white/10 text-sm">
+                        ⏭️ Passer
+                    </button>
+                </div>
+                <button id="btn-quit" class="w-full text-slate-500 py-1 text-xs underline active:text-slate-300">
+                    Quitter la séance
+                </button>
+            </div>
+
+        </div>
+
+        <!-- View: Finished -->
+        <div id="view-finished" class="hidden flex-col gap-4 max-w-md mx-auto h-full justify-center items-center text-center">
+            <div class="text-6xl mb-2">🏆</div>
+            <h2 class="text-3xl font-bold text-emerald-400 mb-2">Séance Terminée !</h2>
+            <p class="text-slate-300 mb-6">Excellent travail aujourd'hui ! Tu te rapproches de ton objectif.</p>
+            <button id="btn-return-menu" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-full font-bold shadow-lg transition-all active:scale-95">
+                Retour au menu principal
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        // --- PROGRAM DATA ---
+        const rawWorkouts = [
+            {
+                id: 'lundi',
+                title: 'Lundi - Haut du Corps & Gainage',
+                duration: '20 min',
+                type: 'standard',
+                items: [
+                    { name: 'Échauffement', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Rotations douces des poignets, coudes et épaules. On réveille les articulations !" },
+                    { name: 'Pompes', type: 'reps', sets: 3, reps: '8 à 12', rest: 45, instruction: "Corps aligné en planche. Descends la poitrine vers le sol sans affaisser le bassin. Sur les genoux si besoin." },
+                    { name: 'Rowing Buste Penché', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Dos droit incliné à 45°. Tire les charges vers le nombril en serrant bien les omoplates." },
+                    { name: 'Gainage Planche', type: 'time', sets: 3, duration: 45, rest: 45, instruction: "Coudes sous les épaules, corps rigide, serre les fessiers et rentre le ventre." },
+                    { name: 'Retour au calme', type: 'time', sets: 1, duration: 60, rest: 0, instruction: "Écarte les bras pour étirer les pectoraux et respire profondément." }
+                ]
+            },
+            {
+                id: 'mardi',
+                title: 'Mardi - Souplesse & Mobilité',
+                duration: '20 min',
+                type: 'standard',
+                items: [
+                    { name: 'Posture Chat-Vache', type: 'time', sets: 1, duration: 120, rest: 10, instruction: "À quatre pattes. Alterne lentement dos rond à l'expiration et dos creux à l'inspiration." },
+                    { name: 'Chien Tête en Bas', type: 'time', sets: 3, duration: 45, rest: 30, instruction: "Mains et pieds au sol, pousse le bassin vers le haut et l'arrière. Relâche la tête." },
+                    { name: 'Fente Basse (Jambe Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Genou droit au sol. Pousse le bassin vers l'avant pour ouvrir la hanche." },
+                    { name: 'Fente Basse (Jambe Droite)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Change de côté ! Genou gauche au sol, pousse le bassin vers l'avant." },
+                    { name: 'Torsion Vertébrale (Côté Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Allongé sur le dos, bras en T, bascule les genoux à gauche en gardant les épaules au sol." },
+                    { type: 'time', name: 'Torsion Vertébrale (Côté Droit)', sets: 2, duration: 60, rest: 15, instruction: "Bascule les genoux à droite. Relâche complètement les tensions." }
+                ]
+            },
+            {
+                id: 'mercredi',
+                title: 'Mercredi - Bas du Corps & Fessiers',
+                duration: '20 min',
+                type: 'standard',
+                items: [
+                    { name: 'Échauffement', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Flexions légères sans charge et déverrouillage des chevilles." },
+                    { name: 'Squats', type: 'reps', sets: 3, reps: '12 à 15', rest: 45, instruction: "Pieds largeur épaules, fesses vers l'arrière et le bas, poids sur les talons, buste droit." },
+                    { name: 'Fentes Arrière Alternées', type: 'reps', sets: 3, reps: '20 (10/jambe)', rest: 45, instruction: "Fais un pas vers l'arrière, genou proche du sol. Alterne gauche et droite." },
+                    { name: 'Relevé de Bassin (Glute Bridge)', type: 'reps', sets: 3, reps: '15', rest: 45, instruction: "Allongé sur le dos, pousse dans les talons et contracte fort les fessiers au sommet." }
+                ]
+            },
+            {
+                id: 'jeudi',
+                title: 'Jeudi - Cardio Doux & Abdos',
+                duration: '20 min',
+                type: 'standard',
+                items: [
+                    { name: "Vélo d'Appartement", type: 'time', sets: 1, duration: 720, rest: 30, instruction: "12 minutes à rythme modéré pour stimuler le cœur en douceur." },
+                    { name: 'Crunchs Abdominaux', type: 'reps', sets: 3, reps: '15', rest: 30, instruction: "Décolle juste les omoplates en contractant les abdos, sans tirer sur la nuque." },
+                    { name: 'Gainage Latéral (Côté Gauche)', type: 'time', sets: 2, duration: 30, rest: 15, instruction: "En appui sur l'avant-bras gauche, décolle le bassin pour former une ligne droite." },
+                    { name: 'Gainage Latéral (Côté Droit)', type: 'time', sets: 2, duration: 30, rest: 30, instruction: "Même chose sur l'avant-bras droit. Pousse fort dans le coude !" }
+                ]
+            },
+            {
+                id: 'vendredi',
+                title: 'Vendredi - Full Body Express',
+                duration: '20 min',
+                type: 'standard',
+                items: [
+                    { name: 'Échauffement', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Mouvements circulaires complets des bras et du buste." },
+                    { name: 'Développé Épaules', type: 'reps', sets: 3, reps: '10 à 12', rest: 45, instruction: "Pousse les haltères vers le haut au-dessus de la tête, sans verrouiller brutalement les coudes." },
+                    { name: 'Soulevé de Terre Jambes Tendues', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Pousse les fesses vers l'arrière, dos bien plat, descends les haltères le long des jambes." },
+                    { name: "Écartés à l'Élastique", type: 'reps', sets: 3, reps: '15', rest: 30, instruction: "Tire l'élastique en écartant les bras pour renforcer la posture et le haut du dos." }
+                ]
+            },
+            {
+                id: 'samedi',
+                title: 'Samedi - Grand Renforcement (Circuit)',
+                duration: '45-60 min',
+                type: 'circuit',
+                warmup: { name: 'Échauffement Vélo & Mobilisation', duration: 600, instruction: "10 minutes de vélo très progressif et mobilisations globales pour bien chauffer le corps." },
+                circuitRounds: 4,
+                circuitRest: 90,
+                items: [
+                    { name: 'Goblet Squat', type: 'reps', reps: '12', instruction: "Un haltère contre la poitrine, descends les fesses en bas et en arrière, talons bien ancrés." },
+                    { name: 'Floor Press avec Haltères', type: 'reps', reps: '12', instruction: "Allongé au sol, pousse les deux haltères vers le plafond puis redescends les coudes vers le sol." },
+                    { name: 'Rowing Buste Penché', type: 'reps', reps: '12', instruction: "Buste incliné à 45°, tire les charges vers le nombril en resserrant les omoplates." },
+                    { name: 'Fentes Marchées / Sur Place', type: 'reps', reps: '20 (10/jambe)', instruction: "Fentes avec haltères, contrôle la descente, genou arrière frôlant le sol." },
+                    { name: 'Curl Biceps Debout', type: 'reps', reps: '12', instruction: "Debout, fléchis les coudes sans balancer le buste pour monter les haltères." },
+                    { name: 'Extension Triceps au-dessus de la tête', type: 'reps', reps: '12', instruction: "Haltère tenu à deux mains au-dessus de la tête, fléchis et étends les coudes." }
+                ]
+            },
+            {
+                id: 'dimanche',
+                title: 'Dimanche - Récupération & Souplesse Profonde',
+                duration: '35-45 min',
+                type: 'standard',
+                items: [
+                    { name: 'Décrassage Cardio Léger', type: 'time', sets: 1, duration: 600, rest: 30, instruction: "10 minutes de vélo à très faible résistance, pédalage ultra fluide pour dérouler les jambes." },
+                    { name: 'Étirement Ischio-jambiers', type: 'time', sets: 2, duration: 90, rest: 20, instruction: "Assis au sol, jambes tendues devant, penche doucement le buste en avant sans à-coups." },
+                    { name: 'Étirement Pectoraux & Épaules (Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Main gauche contre un cadre de porte, pivote doucement le buste vers la droite." },
+                    { name: 'Étirement Pectoraux & Épaules (Droit)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Main droite contre le cadre de porte, pivote doucement le buste vers la gauche." },
+                    { name: 'Étirement Quadriceps (Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Debout, ramène le talon gauche vers la fesse en maintenant les genoux collés." },
+                    { name: 'Étirement Quadriceps (Droit)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Debout, ramène le talon droit vers la fesse en maintenant les genoux collés." },
+                    { name: 'Grand Dorsal (Posture de l’enfant)', type: 'time', sets: 2, duration: 120, rest: 20, instruction: "À genoux, fesses sur les talons, bras allongés loin devant au sol. Respire profondément." }
+                ]
+            }
+        ];
+
+        // --- STEP BUILDER ---
+        function buildStepSequence(workoutData) {
+            const steps = [];
+
+            if (workoutData.type === 'circuit') {
+                if (workoutData.warmup) {
+                    steps.push({
+                        phase: 'PREP',
+                        title: workoutData.warmup.name,
+                        sub: 'Échauffement Initial',
+                        instruction: workoutData.warmup.instruction + " Prépare-toi, ça commence dans 15 secondes !",
+                        duration: 15
+                    });
+                    steps.push({
+                        phase: 'WORK_TIME',
+                        title: workoutData.warmup.name,
+                        sub: 'Échauffement Initial',
+                        instruction: "C'est parti pour l'échauffement !",
+                        duration: workoutData.warmup.duration
+                    });
+                }
+
+                const totalRounds = workoutData.circuitRounds || 4;
+                for (let r = 1; r <= totalRounds; r++) {
+                    workoutData.items.forEach((item, exIdx) => {
+                        steps.push({
+                            phase: 'PREP',
+                            title: item.name,
+                            sub: `Tour ${r}/${totalRounds} • Exercice ${exIdx + 1}/${workoutData.items.length}`,
+                            instruction: item.instruction + " Mise en position : 15 secondes !",
+                            duration: 15
+                        });
+
+                        if (item.type === 'reps') {
+                            steps.push({
+                                phase: 'WORK_REPS',
+                                title: item.name,
+                                sub: `Tour ${r}/${totalRounds} • Exercice ${exIdx + 1}/${workoutData.items.length}`,
+                                instruction: item.instruction,
+                                reps: item.reps
+                            });
+                        } else {
+                            steps.push({
+                                phase: 'WORK_TIME',
+                                title: item.name,
+                                sub: `Tour ${r}/${totalRounds} • Exercice ${exIdx + 1}/${workoutData.items.length}`,
+                                instruction: item.instruction,
+                                duration: item.duration
+                            });
+                        }
+                    });
+
+                    if (r < totalRounds) {
+                        steps.push({
+                            phase: 'REST',
+                            title: `Repos de Fin de Tour ${r}`,
+                            sub: `Récupération Circuit (${workoutData.circuitRest || 90}s)`,
+                            instruction: `Super tour ${r} complété ! Repose-toi bien avant le tour ${r + 1}.`,
+                            duration: workoutData.circuitRest || 90
+                        });
+                    }
+                }
+
+            } else {
+                workoutData.items.forEach((item) => {
+                    const totalSets = item.sets || 1;
+                    
+                    steps.push({
+                        phase: 'PREP',
+                        title: item.name,
+                        sub: `Série 1/${totalSets}`,
+                        instruction: `Prochain exercice : ${item.name}. ${item.instruction} Prépare-toi !`,
+                        duration: 15
+                    });
+
+                    for (let s = 1; s <= totalSets; s++) {
+                        if (s > 1) {
+                            steps.push({
+                                phase: 'REST',
+                                title: `Repos - ${item.name}`,
+                                sub: `Entre Série ${s-1} et Série ${s}`,
+                                instruction: `Souffle bien ! Repos pendant ${item.rest || 30} secondes.`,
+                                duration: item.rest || 30
+                            });
+                        }
+
+                        if (item.type === 'reps') {
+                            steps.push({
+                                phase: 'WORK_REPS',
+                                title: item.name,
+                                sub: `Série ${s}/${totalSets}`,
+                                instruction: item.instruction,
+                                reps: item.reps
+                            });
+                        } else {
+                            steps.push({
+                                phase: 'WORK_TIME',
+                                title: item.name,
+                                sub: `Série ${s}/${totalSets}`,
+                                instruction: item.instruction,
+                                duration: item.duration
+                            });
+                        }
+                    }
+                });
+            }
+
+            return steps;
+        }
+
+        // --- APP ENGINE STATE ---
+        let stepsQueue = [];
+        let currentStepIdx = 0;
+        let timerInterval = null;
+        let timeLeft = 0;
+        let isPaused = false;
+        let audioMuted = false;
+        let wakeLock = null;
+
+        // --- SCREEN WAKE LOCK API ---
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.log('Wake Lock request failed:', err);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release().then(() => {
+                    wakeLock = null;
+                });
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        });
+
+        // DOM elements
+        const viewSelect = document.getElementById('view-select');
+        const viewWorkout = document.getElementById('view-workout');
+        const viewFinished = document.getElementById('view-finished');
+        const daysList = document.getElementById('days-list');
+
+        const stepBadge = document.getElementById('step-badge');
+        const progressBadge = document.getElementById('progress-badge');
+        const exTitle = document.getElementById('ex-title');
+        const exSub = document.getElementById('ex-sub');
+        const exInstruction = document.getElementById('ex-instruction');
+
+        const timerDisplay = document.getElementById('timer-display');
+        const repsDisplay = document.getElementById('reps-display');
+        const repsCount = document.getElementById('reps-count');
+
+        const btnDone = document.getElementById('btn-done');
+        const btnPause = document.getElementById('btn-pause');
+        const btnSkip = document.getElementById('btn-skip');
+        const btnQuit = document.getElementById('btn-quit');
+        const btnReturnMenu = document.getElementById('btn-return-menu');
+        const btnAudioToggle = document.getElementById('btn-audio-toggle');
+
+        // Speech Synthesis
+        const synth = window.speechSynthesis;
+        function speak(text) {
+            if (audioMuted) return;
+            if (synth.speaking) synth.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'fr-FR';
+            u.rate = 1.05;
+            u.pitch = 1.05;
+            synth.speak(u);
+        }
+
+        btnAudioToggle.onclick = () => {
+            audioMuted = !audioMuted;
+            if (audioMuted) {
+                if (synth.speaking) synth.cancel();
+                btnAudioToggle.innerText = "🔇 Sound Off";
+                btnAudioToggle.className = "text-xs bg-rose-900/50 px-3 py-1.5 rounded-full text-rose-300 font-medium";
+            } else {
+                btnAudioToggle.innerText = "🔊 Sound On";
+                btnAudioToggle.className = "text-xs bg-slate-700 px-3 py-1.5 rounded-full text-indigo-300 font-medium";
+            }
+        };
+
+        // Populate Day Selector Menu
+        rawWorkouts.forEach(w => {
+            const btn = document.createElement('button');
+            btn.className = "bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-white font-bold py-4 px-5 rounded-2xl shadow-lg transition-all active:scale-95 flex justify-between items-center text-left";
+            btn.innerHTML = `
+                <div>
+                    <div class="text-indigo-300 font-bold text-base">${w.title}</div>
+                    <div class="text-xs text-slate-400 font-normal mt-0.5">⏱️ ${w.duration}</div>
+                </div>
+                <span class="text-indigo-400 text-lg">▶</span>
+            `;
+            btn.onclick = () => startWorkout(w);
+            daysList.appendChild(btn);
+        });
+
+        function resetToMenu() {
+            clearInterval(timerInterval);
+            releaseWakeLock();
+            if (synth.speaking) synth.cancel();
+            stepsQueue = [];
+            currentStepIdx = 0;
+            isPaused = false;
+
+            viewWorkout.classList.add('hidden');
+            viewWorkout.classList.remove('flex');
+            viewFinished.classList.add('hidden');
+            viewFinished.classList.remove('flex');
+            
+            viewSelect.classList.remove('hidden');
+            viewSelect.classList.add('flex');
+        }
+
+        function startWorkout(workoutData) {
+            speak("C'est parti !");
+            requestWakeLock(); // Keeps the iPhone screen awake automatically
+
+            stepsQueue = buildStepSequence(workoutData);
+            currentStepIdx = 0;
+            isPaused = false;
+
+            viewSelect.classList.add('hidden');
+            viewSelect.classList.remove('flex');
+            viewFinished.classList.add('hidden');
+            viewWorkout.classList.remove('hidden');
+            viewWorkout.classList.add('flex');
+
+            executeCurrentStep();
+        }
+
+        function executeCurrentStep() {
+            clearInterval(timerInterval);
+
+            if (currentStepIdx >= stepsQueue.length) {
+                finishWorkout();
+                return;
+            }
+
+            const step = stepsQueue[currentStepIdx];
+
+            progressBadge.innerText = `Étape ${currentStepIdx + 1}/${stepsQueue.length}`;
+            exTitle.innerText = step.title;
+            exSub.innerText = step.sub || '';
+            exInstruction.innerText = step.instruction;
+
+            if (step.phase === 'PREP') {
+                stepBadge.innerText = "PRÉPARATION";
+                stepBadge.className = "bg-amber-500/20 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-500/30";
+                
+                timerDisplay.classList.remove('hidden');
+                repsDisplay.classList.add('hidden');
+                btnDone.classList.add('hidden');
+
+                timeLeft = step.duration;
+                updateTimerDisplay();
+                speak(`Préparation : ${step.title}. ${step.instruction}`);
+
+                runCountdown(() => {
+                    currentStepIdx++;
+                    executeCurrentStep();
+                });
+
+            } else if (step.phase === 'REST') {
+                stepBadge.innerText = "REPOS";
+                stepBadge.className = "bg-emerald-500/20 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-500/30";
+
+                timerDisplay.classList.remove('hidden');
+                repsDisplay.classList.add('hidden');
+                btnDone.classList.add('hidden');
+
+                timeLeft = step.duration;
+                updateTimerDisplay();
+                speak(`Repos pendant ${timeLeft} secondes. Souffle bien !`);
+
+                runCountdown(() => {
+                    currentStepIdx++;
+                    executeCurrentStep();
+                });
+
+            } else if (step.phase === 'WORK_TIME') {
+                stepBadge.innerText = "EXERCICE EN COURS";
+                stepBadge.className = "bg-rose-500/20 text-rose-400 text-xs font-bold px-2.5 py-1 rounded-full border border-rose-500/30";
+
+                timerDisplay.classList.remove('hidden');
+                repsDisplay.classList.add('hidden');
+                btnDone.classList.add('hidden');
+
+                timeLeft = step.duration;
+                updateTimerDisplay();
+                speak(`C'est parti pour ${timeLeft} secondes !`);
+
+                runCountdown(() => {
+                    currentStepIdx++;
+                    executeCurrentStep();
+                });
+
+            } else if (step.phase === 'WORK_REPS') {
+                stepBadge.innerText = "EXERCICE EN COURS";
+                stepBadge.className = "bg-rose-500/20 text-rose-400 text-xs font-bold px-2.5 py-1 rounded-full border border-rose-500/30";
+
+                timerDisplay.classList.add('hidden');
+                repsDisplay.classList.remove('hidden');
+                repsDisplay.classList.add('flex');
+                repsCount.innerText = step.reps;
+                btnDone.classList.remove('hidden');
+
+                speak(`C'est parti pour ${step.reps} répétitions. Appuie sur le bouton vert dès que tu as terminé.`);
+            }
+        }
+
+        function runCountdown(onComplete) {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (isPaused) return;
+
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft === 3) {
+                    speak("Attention, 3, 2, 1 !");
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    onComplete();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            timerDisplay.innerText = `${m}:${s}`;
+        }
+
+        btnDone.onclick = () => {
+            if (!isPaused && stepsQueue[currentStepIdx].phase === 'WORK_REPS') {
+                currentStepIdx++;
+                executeCurrentStep();
+            }
+        };
+
+        btnSkip.onclick = () => {
+            clearInterval(timerInterval);
+            currentStepIdx++;
+            executeCurrentStep();
+        };
+
+        btnPause.onclick = () => {
+            isPaused = !isPaused;
+            if (isPaused) {
+                btnPause.innerText = "▶️ Reprendre";
+                btnPause.classList.add('bg-rose-600/30');
+                speak("Pause.");
+            } else {
+                btnPause.innerText = "⏸️ Pause";
+                btnPause.classList.remove('bg-rose-600/30');
+                speak("On reprend !");
+            }
+        };
+
+        btnQuit.onclick = () => {
+            if (confirm("Veux-tu vraiment interrompre la séance ?")) {
+                resetToMenu();
+            }
+        };
+
+        btnReturnMenu.onclick = () => {
+            resetToMenu();
+        };
+
+        function finishWorkout() {
+            speak("Séance terminée ! Un grand bravo pour tes efforts aujourd'hui. Récupère bien !");
+            releaseWakeLock();
+            viewWorkout.classList.add('hidden');
+            viewWorkout.classList.remove('flex');
+            viewFinished.classList.remove('hidden');
+            viewFinished.classList.add('flex');
+        }
+
+    </script>
+</body>
+</html>
