@@ -12,7 +12,6 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        /* Utilisation de la hauteur dynamique pour mobile (100dvh) */
         .app-height {
             height: 100dvh;
         }
@@ -189,8 +188,8 @@
                     { name: 'Étirement Ischio-jambiers', type: 'time', sets: 2, duration: 90, rest: 20, instruction: "Assis au sol, jambes tendues devant, penche doucement le buste en avant sans à-coups." },
                     { name: 'Étirement Pectoraux & Épaules (Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Main gauche contre un cadre de porte, pivote doucement le buste vers la droite." },
                     { name: 'Étirement Pectoraux & Épaules (Droit)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Main droite contre le cadre de porte, pivote doucement le buste vers la gauche." },
-                    { name: 'Étirement Quadriceps (Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Debout, ramène le talon gauche vers la fesse en maintenant les genoux collés." },
-                    { name: 'Étirement Quadriceps (Droit)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Debout, ramène le talon droit vers la fesse en maintenant les genoux collés." },
+                    { name: 'Étirement Quadriceps (Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Debout, ramène le talon gauche vers la fesse en maintaining les genoux collés." },
+                    { name: 'Étirement Quadriceps (Droit)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Debout, ramène le talon droit vers la fesse en maintaining les genoux collés." },
                     { name: 'Grand Dorsal (Posture de l’enfant)', type: 'time', sets: 2, duration: 120, rest: 20, instruction: "À genoux, fesses sur les talons, bras allongés loin devant au sol. Respire profondément." }
                 ]
             }
@@ -314,6 +313,31 @@
         let isPaused = false;
         let audioMuted = false;
         let wakeLock = null;
+        let audioCtx = null;
+
+        // --- AUDIO HYBRID FOR SILENT MODE BYPASS ---
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSilentAudioBuffer() {
+            initAudioContext();
+            if (audioCtx) {
+                const buffer = audioCtx.createBuffer(1, 1, 22050);
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioCtx.destination);
+                source.start(0);
+            }
+        }
 
         // --- SCREEN WAKE LOCK API ---
         async function requestWakeLock() {
@@ -363,22 +387,24 @@
         const btnReturnMenu = document.getElementById('btn-return-menu');
         const btnAudioToggle = document.getElementById('btn-audio-toggle');
 
-        // Speech Synthesis
+        // Speech Synthesis with iOS Silent Mode Bypass Fix
         const synth = window.speechSynthesis;
         function speak(text) {
             if (audioMuted) return;
-            
-            // Annule la parole en cours pour éviter les blocages de la file d'attente iOS
-            window.speechSynthesis.cancel();
-        
+
+            playSilentAudioBuffer();
+
+            if (synth.speaking) {
+                synth.cancel();
+            }
+
             const u = new SpeechSynthesisUtterance(text);
             u.lang = 'fr-FR';
             u.rate = 1.05;
             u.pitch = 1.05;
-        
-            // Correctif pour iOS : forcer l'activation de la synthèse vocale
+
             setTimeout(() => {
-                window.speechSynthesis.speak(u);
+                synth.speak(u);
             }, 50);
         }
 
@@ -389,6 +415,7 @@
                 btnAudioToggle.innerText = "🔇 Sound Off";
                 btnAudioToggle.className = "text-xs bg-rose-900/50 px-3 py-1.5 rounded-full text-rose-300 font-medium";
             } else {
+                initAudioContext();
                 btnAudioToggle.innerText = "🔊 Sound On";
                 btnAudioToggle.className = "text-xs bg-slate-700 px-3 py-1.5 rounded-full text-indigo-300 font-medium";
             }
@@ -427,6 +454,7 @@
         }
 
         function startWorkout(workoutData) {
+            initAudioContext();
             speak("C'est parti !");
             requestWakeLock();
 
