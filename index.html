@@ -367,12 +367,19 @@
         const synth = window.speechSynthesis;
         function speak(text) {
             if (audioMuted) return;
-            if (synth.speaking) synth.cancel();
+            
+            // Annule la parole en cours pour éviter les blocages de la file d'attente iOS
+            window.speechSynthesis.cancel();
+        
             const u = new SpeechSynthesisUtterance(text);
             u.lang = 'fr-FR';
             u.rate = 1.05;
             u.pitch = 1.05;
-            synth.speak(u);
+        
+            // Correctif pour iOS : forcer l'activation de la synthèse vocale
+            setTimeout(() => {
+                window.speechSynthesis.speak(u);
+            }, 50);
         }
 
         btnAudioToggle.onclick = () => {
