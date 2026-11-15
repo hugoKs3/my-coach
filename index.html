@@ -23,12 +23,9 @@
     <header class="bg-slate-800 p-3 sm:p-4 text-center shadow-lg z-10 flex justify-between items-center px-4 sm:px-6 shrink-0">
         <div>
             <h1 class="text-lg sm:text-xl font-bold text-indigo-400">Coach Virtuel</h1>
-            <p id="cycle-subtitle" class="text-[10px] sm:text-xs text-slate-400">Cycle A • Force & Mobilité</p>
+            <p class="text-[10px] sm:text-xs text-slate-400">Programme Remise en Forme (7 jours)</p>
         </div>
-        <div class="flex gap-2 items-center">
-            <button id="btn-cycle-toggle" class="text-xs bg-indigo-600/60 hover:bg-indigo-600 px-2.5 py-1.5 rounded-full text-indigo-200 font-medium transition-all">🔄 Cycle A/D</button>
-            <button id="btn-audio-toggle" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-full text-indigo-300 font-medium transition-all">🔊 Sound On</button>
-        </div>
+        <button id="btn-audio-toggle" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-full text-indigo-300 font-medium transition-all">🔊 Sound On</button>
     </header>
 
     <!-- Main Content -->
@@ -36,37 +33,10 @@
         
         <!-- View: Select Day -->
         <div id="view-select" class="flex flex-col gap-3 max-w-md mx-auto w-full my-auto py-2">
-            <h2 class="text-xl sm:text-2xl font-bold text-center mb-1">Choisir une séance</h2>
-            <p class="text-xs text-slate-400 text-center mb-2">Lundi et Vendredi : choisis ton format (20 min ou 1h)</p>
+            <h2 class="text-xl sm:text-2xl font-bold text-center mb-2">Choisir une séance</h2>
             <div id="days-list" class="flex flex-col gap-2.5">
                 <!-- Dynamically populated -->
             </div>
-        </div>
-
-        <!-- View: Sub-menu for Duration Choice (Monday / Friday) -->
-        <div id="view-duration-choice" class="hidden flex-col gap-4 max-w-md mx-auto w-full my-auto py-4 text-center">
-            <div class="text-4xl mb-1">⏱️</div>
-            <h2 id="choice-day-title" class="text-2xl font-bold text-indigo-300">Choisir le format</h2>
-            <p class="text-xs text-slate-400">Combien de temps as-tu aujourd'hui ?</p>
-            <div class="flex flex-col gap-3 mt-3">
-                <button id="btn-format-short" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-4 px-5 rounded-2xl shadow-lg transition-all active:scale-95 flex justify-between items-center text-left">
-                    <div>
-                        <div class="text-indigo-300 font-bold text-base">Format Express</div>
-                        <div class="text-xs text-slate-400 mt-0.5">⏱️ ~20 minutes (Séance rapide)</div>
-                    </div>
-                    <span class="text-indigo-400 text-lg">▶</span>
-                </button>
-                <button id="btn-format-long" class="bg-indigo-800/60 hover:bg-indigo-800 border border-indigo-600/50 text-white font-bold py-4 px-5 rounded-2xl shadow-lg transition-all active:scale-95 flex justify-between items-center text-left">
-                    <div>
-                        <div class="text-indigo-200 font-bold text-base">Format Complet Approfondi</div>
-                        <div class="text-xs text-indigo-300/80 mt-0.5">⏳ ~60 minutes (Séance intensive 1h)</div>
-                    </div>
-                    <span class="text-indigo-300 text-lg">▶</span>
-                </button>
-            </div>
-            <button id="btn-back-to-select" class="mt-4 text-slate-400 text-xs underline active:text-slate-200">
-                ← Retour au choix des jours
-            </button>
         </div>
 
         <!-- View: Workout Active -->
@@ -126,483 +96,214 @@
     </main>
 
     <script>
-        // --- 4 ROTATING CYCLES (A, B, C, D) UTILIZING BIKE, DUMBBELLS, MAT, AND BANDS ---
-        let currentCycle = 'A';
-        const cycleKeys = ['A', 'B', 'C', 'D'];
-
-        const cycleNames = {
-            A: "Cycle A • Force & Mobilité",
-            B: "Cycle B • Endurance & Tonicité",
-            C: "Cycle C • Hypertrophie & Haltères",
-            D: "Cycle D • Cardio Vélo & Brûlage"
-        };
-
-        const programs = {
-            A: {
-                name: "Cycle A • Force & Mobilité",
-                workouts: [
-                    {
-                        id: 'lundi',
-                        title: 'Lundi - Haut du Corps & Gainage',
-                        hasChoice: true,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement Articulaire', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Rotations douces des poignets, coudes et épaules sur le tapis." },
-                                { name: 'Pompes Classiques', type: 'reps', sets: 3, reps: '10', rest: 45, instruction: "Corps aligné en planche. Descends la poitrine vers le sol." },
-                                { name: 'Rowing Buste Penché (Haltères)', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Dos droit incliné à 45°. Tire les haltères vers le nombril." },
-                                { name: 'Gainage Planche', type: 'time', sets: 3, duration: 45, rest: 45, instruction: "Coudes sous les épaules, corps rigide sur le tapis." }
-                            ]
-                        },
-                        long: {
-                            duration: '60 min',
-                            items: [
-                                { name: 'Échauffement Complet Haut du Corps', type: 'time', sets: 1, duration: 300, rest: 30, instruction: "Mobilisation articulaire approfondie." },
-                                { name: 'Développé Couché au Sol (Haltères)', type: 'reps', sets: 4, reps: '12', rest: 60, instruction: "Allongé sur le tapis, pousse les haltères au plafond." },
-                                { name: 'Rowing Haltères Lourd', type: 'reps', sets: 4, reps: '10', rest: 60, instruction: "Contraction forte des omoplates." },
-                                { name: 'Développé Épaules (Haltères)', type: 'reps', sets: 4, reps: '12', rest: 60, instruction: "Assis ou debout, pousse au-dessus de la tête." },
-                                { name: 'Élévations Latérales (Élastique)', type: 'reps', sets: 3, reps: '15', rest: 45, instruction: "Marche sur l'élastique et monte les bras sur les côtés." },
-                                { name: 'Gainage Dynamique Commando', type: 'time', sets: 3, duration: 60, rest: 45, instruction: "Alterne appui mains et coudes." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'mardi',
-                        title: 'Mardi - Souplesse & Mobilité',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Posture Chat-Vache', type: 'time', sets: 1, duration: 120, rest: 10, instruction: "Sur le tapis, alterne dos rond et dos creux." },
-                                { name: 'Chien Tête en Bas', type: 'time', sets: 3, duration: 45, rest: 30, instruction: "Pousse le bassin vers le haut et l'arrière." },
-                                { name: 'Étirement Psoas & Hanches', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Fente basse prolongée, bassin relâché." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'mercredi',
-                        title: 'Mercredi - Bas du Corps & Fessiers',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement Articulaire', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Déverrouillage des genoux et chevilles." },
-                                { name: 'Goblet Squat (Haltère)', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Maintiens un haltère contre la poitrine, descends les fesses." },
-                                { name: 'Pont Fessier au Tapis', type: 'reps', sets: 3, reps: '15', rest: 45, instruction: "Pousse dans les talons, contracte fort au sommet." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'jeudi',
-                        title: 'Jeudi - Cardio Vélo Doux',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: "Vélo d'Appartement (Modéré)", type: 'time', sets: 1, duration: 900, rest: 30, instruction: "15 minutes de pédalage fluide et régulier pour stimuler le cardio." },
-                                { name: 'Crunchs Abdos sur Tapis', type: 'reps', sets: 3, reps: '15', rest: 30, instruction: "Décolle les omoplates en contractant la sangle abdominale." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'vendredi',
-                        title: 'Vendredi - Full Body Tonic',
-                        hasChoice: true,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement Global', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Mouvements circulaires amples." },
-                                { name: 'Fentes Arrière (Haltères)', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Pas en arrière en contrôlant la descente." },
-                                { name: 'Curl Biceps (Élastique ou Haltères)', type: 'reps', sets: 3, reps: '15', rest: 40, instruction: "Fléchis les coudes en gardant les bras serrés." }
-                            ]
-                        },
-                        long: {
-                            duration: '60 min',
-                            items: [
-                                { name: "Échauffement Vélo & Mobilité", type: 'time', sets: 1, duration: 300, rest: 30, instruction: "5 min de vélo léger puis étirements dynamiques." },
-                                { name: 'Squats Bulgare (Haltères)', type: 'reps', sets: 4, reps: '10 par jambe', rest: 60, instruction: "Pied arrière sur une chaise ou un support." },
-                                { name: 'Pompes Serrées (Triceps)', type: 'reps', sets: 4, reps: '12', rest: 60, instruction: "Mains sous les épaules." },
-                                { name: 'Soulevé de Terre (Haltères)', type: 'reps', sets: 4, reps: '12', rest: 60, instruction: "Dos bien plat, fléchis légèrement les genoux." },
-                                { name: 'Extension Triceps (Haltère)', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Derrière la tête à deux mains." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'samedi',
-                        title: 'Samedi - Circuit Training Global',
-                        hasChoice: false,
-                        short: {
-                            duration: '45 min',
-                            type: 'circuit',
-                            warmup: { name: 'Échauffement Vélo', duration: 300, instruction: "5 min de mise en route." },
-                            circuitRounds: 4,
-                            circuitRest: 60,
-                            items: [
-                                { name: 'Goblet Squat', type: 'reps', reps: '12', instruction: "Haltère poitrine, bas du corps solide." },
-                                { name: 'Floor Press', type: 'reps', reps: '12', instruction: "Développé couché au sol avec haltères." },
-                                { name: 'Gainage Planche', type: 'time', duration: 45, instruction: "Sur le tapis, gainage de fer." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'dimanche',
-                        title: 'Dimanche - Récupération Profonde',
-                        hasChoice: false,
-                        short: {
-                            duration: '30 min',
-                            items: [
-                                { name: 'Pédalage Ultra Souple (Vélo)', type: 'time', sets: 1, duration: 600, rest: 30, instruction: "10 min de récupération active." },
-                                { name: 'Posture de l’Enfant (Tapis)', type: 'time', sets: 2, duration: 120, rest: 20, instruction: "Relâchement total du dos et respiration profonde." }
-                            ]
-                        }
-                    }
+        // --- PROGRAM DATA ---
+        const rawWorkouts = [
+            {
+                id: 'lundi',
+                title: 'Lundi - Haut du Corps & Gainage',
+                duration: '20 min',
+                type: 'standard',
+                items: [
+                    { name: 'Échauffement', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Rotations douces des poignets, coudes et épaules. On réveille les articulations !" },
+                    { name: 'Pompes', type: 'reps', sets: 3, reps: '8 à 12', rest: 45, instruction: "Corps aligné en planche. Descends la poitrine vers le sol sans affaisser le bassin. Sur les genoux si besoin." },
+                    { name: 'Rowing Buste Penché', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Dos droit incliné à 45°. Tire les charges vers le nombril en serrant bien les omoplates." },
+                    { name: 'Gainage Planche', type: 'time', sets: 3, duration: 45, rest: 45, instruction: "Coudes sous les épaules, corps rigide, serre les fessiers et rentre le ventre." },
+                    { name: 'Retour au calme', type: 'time', sets: 1, duration: 60, rest: 0, instruction: "Écarte les bras pour étirer les pectoraux et respire profondément." }
                 ]
             },
-            B: {
-                name: "Cycle B • Endurance & Tonicité",
-                workouts: [
-                    {
-                        id: 'lundi',
-                        title: 'Lundi - Sangle Abdominale & Cardio',
-                        hasChoice: true,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement Dynamique', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Jumping jacks sur place." },
-                                { name: 'Mountain Climbers (Tapis)', type: 'time', sets: 3, duration: 45, rest: 45, instruction: "Genoux alternés vers la poitrine en planche." },
-                                { name: 'Gainage Touches d’Épaules', type: 'time', sets: 3, duration: 45, rest: 45, instruction: "En appui planche, touche l'épaule opposée." }
-                            ]
-                        },
-                        long: {
-                            duration: '60 min',
-                            items: [
-                                { name: "Échauffement Vélo Progressif", type: 'time', sets: 1, duration: 300, rest: 30, instruction: "5 min de vélo rythmé." },
-                                { name: 'Circuit Abdos Intensif (Tapis)', type: 'reps', sets: 4, reps: '20', rest: 60, instruction: "Crunchs et bicyclette enchaînés." },
-                                { name: 'Burpees au Tapis', type: 'reps', sets: 4, reps: '10', rest: 60, instruction: "Squat, planche, saut groupé." },
-                                { name: 'Gainage Latéral Dynamique', type: 'time', sets: 4, duration: 45, rest: 30, instruction: "Mouvements de bassin haut-bas." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'mardi',
-                        title: 'Mardi - Mobilité & Étirements Bandes',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Mobilité Épaules (Élastique)', type: 'time', sets: 3, duration: 60, rest: 15, instruction: "Écartement des mains avec l'élastique tendu devant soi." },
-                                { name: 'Mobilité Hanches 90/90', type: 'time', sets: 2, duration: 90, rest: 20, instruction: "Bascules de genoux au sol." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'mercredi',
-                        title: 'Mercredi - Cuisses & Élastique',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement Articulaire', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Flexions douces." },
-                                { name: 'Squats avec Élastique (sous les pieds)', type: 'reps', sets: 3, reps: '15', rest: 45, instruction: "Maintiens les poignées aux épaules pour ajouter de la résistance." },
-                                { name: 'Good Mornings (Élastique)', type: 'reps', sets: 3, reps: '15', rest: 45, instruction: "Élastique sous les pieds et autour du haut du dos, inclinaison du buste." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'jeudi',
-                        title: 'Jeudi - Interval Training Vélo',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Vélo - Intervalles Vitesse', type: 'time', sets: 6, duration: 120, rest: 60, instruction: "Alterne 2 min rapide et 1 min de récupération souple sur le vélo." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'vendredi',
-                        title: 'Vendredi - Full Body Résistance',
-                        hasChoice: true,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement Global', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Mobilisation des bras et jambes." },
-                                { name: 'Développé Épaules (Élastique)', type: 'reps', sets: 3, reps: '15', rest: 40, instruction: "Pousse les poignées vers le haut." },
-                                { name: 'Fentes Latérales', type: 'reps', sets: 3, reps: '12', rest: 40, instruction: "Pas sur le côté en fléchissant une jambe." }
-                            ]
-                        },
-                        long: {
-                            duration: '60 min',
-                            items: [
-                                { name: 'Échauffement Cardio Vélo', type: 'time', sets: 1, duration: 300, rest: 30, instruction: "Activation complète." },
-                                { name: 'Pompes sur Tapis', type: 'reps', sets: 4, reps: '15', rest: 60, instruction: "Série longue de pompes." },
-                                { name: 'Rowing avec Élastique', type: 'reps', sets: 4, reps: '15', rest: 60, instruction: "Tirage horizontal assis sur le tapis." },
-                                { name: 'Squats Sautés', type: 'reps', sets: 4, reps: '12', rest: 60, instruction: "Explosion verticale." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'samedi',
-                        title: 'Samedi - Vélo & Renfo',
-                        hasChoice: false,
-                        short: {
-                            duration: '45 min',
-                            type: 'circuit',
-                            warmup: { name: 'Vélo Léger', duration: 300, instruction: "Mise en route." },
-                            circuitRounds: 4,
-                            circuitRest: 60,
-                            items: [
-                                { name: 'Pompes', type: 'reps', reps: '12', instruction: "Sur le tapis." },
-                                { name: 'Squats', type: 'reps', reps: '15', instruction: "Sans charge." },
-                                { name: 'Gainage Planche', type: 'time', duration: 45, instruction: "Solide." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'dimanche',
-                        title: 'Dimanche - Détente Active',
-                        hasChoice: false,
-                        short: {
-                            duration: '30 min',
-                            items: [
-                                { name: 'Vélo Récupération', type: 'time', sets: 1, duration: 900, rest: 30, instruction: "Pédalage très léger." },
-                                { name: 'Étirements Globaux (Tapis)', type: 'time', sets: 1, duration: 900, rest: 0, instruction: "Assouplissements doux." }
-                            ]
-                        }
-                    }
+            {
+                id: 'mardi',
+                title: 'Mardi - Souplesse & Mobilité',
+                duration: '20 min',
+                type: 'standard',
+                items: [
+                    { name: 'Posture Chat-Vache', type: 'time', sets: 1, duration: 120, rest: 10, instruction: "À quatre pattes. Alterne lentement dos rond à l'expiration et dos creux à l'inspiration." },
+                    { name: 'Chien Tête en Bas', type: 'time', sets: 3, duration: 45, rest: 30, instruction: "Mains et pieds au sol, pousse le bassin vers le haut et l'arrière. Relâche la tête." },
+                    { name: 'Fente Basse (Jambe Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Genou droit au sol. Pousse le bassin vers l'avant pour ouvrir la hanche." },
+                    { name: 'Fente Basse (Jambe Droite)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Change de côté ! Genou gauche au sol, pousse le bassin vers l'avant." },
+                    { name: 'Torsion Vertébrale (Côté Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Allongé sur le dos, bras en T, bascule les genoux à gauche en gardant les épaules au sol." },
+                    { type: 'time', name: 'Torsion Vertébrale (Côté Droit)', sets: 2, duration: 60, rest: 15, instruction: "Bascule les genoux à droite. Relâche complètement les tensions." }
                 ]
             },
-            C: {
-                name: "Cycle C • Hypertrophie & Haltères",
-                workouts: [
-                    {
-                        id: 'lundi',
-                        title: 'Lundi - Pectoraux & Triceps (Haltères)',
-                        hasChoice: true,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement Articulaire', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Cercles de bras et poignets." },
-                                { name: 'Développé Incliné au Sol (Haltères)', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Coudes légèrement rentrés au sol." },
-                                { name: 'Pompes Diamant (Tapis)', type: 'reps', sets: 3, reps: '10', rest: 45, instruction: "Mains serrées pour cibler les triceps." }
-                            ]
-                        },
-                        long: {
-                            duration: '60 min',
-                            items: [
-                                { name: 'Échauffement Complet', type: 'time', sets: 1, duration: 300, rest: 30, instruction: "Activation haut du corps." },
-                                { name: 'Développé Couché au Sol (Haltères lourds)', type: 'reps', sets: 4, reps: '10', rest: 60, instruction: "Pousse puissante vers le plafond." },
-                                { name: 'Écartés avec Haltères au Tapis', type: 'reps', sets: 4, reps: '12', rest: 60, instruction: "Ouverture ample des bras en gardant les coudes fléchis." },
-                                { name: 'Dips sur Chaise', type: 'reps', sets: 4, reps: '12', rest: 60, instruction: "Descente contrôlée." },
-                                { name: 'Extensions Triceps Haltères', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Allongé sur le tapis." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'mardi',
-                        title: 'Mardi - Mobilité & Colonne Vertébrale',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Torsions Dorsales au Tapis', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Genoux basculés sur les côtés." },
-                                { name: 'Posture Chat-Vache', type: 'time', sets: 3, duration: 45, rest: 15, instruction: "Flexions douces du dos." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'mercredi',
-                        title: 'Mercredi - Jambes & Ischio-jambiers (Haltères)',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement Jambes', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Rotations de genoux." },
-                                { name: 'Soulevé de Terre Jambes Tendues (Haltères)', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Dos plat, fesses en arrière." },
-                                { name: 'Fentes Statiques (Haltères)', type: 'reps', sets: 3, reps: '10 par jambe', rest: 45, instruction: "Descente verticale." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'jeudi',
-                        title: 'Jeudi - Cardio Vélo & Abdos',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: "Vélo d'Appartement (Cadence soutenue)", type: 'time', sets: 1, duration: 720, rest: 30, instruction: "12 min de pédalage dynamique." },
-                                { name: 'Gainage Planche sur Tapis', type: 'time', sets: 3, duration: 45, rest: 30, instruction: "Ventre rentré, fessiers serrés." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'vendredi',
-                        title: 'Vendredi - Dos & Biceps',
-                        hasChoice: true,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement Dos', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Mouvements de bras." },
-                                { name: 'Rowing Haltères', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Tirage vers le bassin." },
-                                { name: 'Curl Biceps Haltères', type: 'reps', sets: 3, reps: '12', rest: 40, instruction: "Montée des charges sans élan." }
-                            ]
-                        },
-                        long: {
-                            duration: '60 min',
-                            items: [
-                                { name: 'Échauffement Complet', type: 'time', sets: 1, duration: 300, rest: 30, instruction: "Mobilisation globale." },
-                                { name: 'Rowing Buste Penché (Lourd)', type: 'reps', sets: 4, reps: '10', rest: 60, instruction: "Dos bien fixe à 45°." },
-                                { name: 'Pull-over avec Haltère au Tapis', type: 'reps', sets: 4, reps: '12', rest: 60, instruction: "Allongé, amène l'haltère derrière la tête." },
-                                { name: 'Curl Biceps Marteau (Haltères)', type: 'reps', sets: 4, reps: '12', rest: 60, instruction: "Paumes face à face." },
-                                { name: 'Gainage Superman (Tapis)', type: 'time', sets: 3, duration: 45, rest: 30, instruction: "Renforcement des lombaires." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'samedi',
-                        title: 'Samedi - Circuit Haltères & Vélo',
-                        hasChoice: false,
-                        short: {
-                            duration: '45 min',
-                            type: 'circuit',
-                            warmup: { name: 'Vélo Échauffement', duration: 300, instruction: "5 min de vélo." },
-                            circuitRounds: 4,
-                            circuitRest: 60,
-                            items: [
-                                { name: 'Goblet Squat', type: 'reps', reps: '12', instruction: "Haltère poitrine." },
-                                { name: 'Floor Press', type: 'reps', reps: '12', instruction: "Haltères au sol." },
-                                { name: 'Rowing Buste', type: 'reps', reps: '12', instruction: "Haltères." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'dimanche',
-                        title: 'Dimanche - Récupération Douce',
-                        hasChoice: false,
-                        short: {
-                            duration: '30 min',
-                            items: [
-                                { name: 'Vélo Récupération', type: 'time', sets: 1, duration: 600, rest: 30, instruction: "Pédalage relax." },
-                                { name: 'Étirements Tapis', type: 'time', sets: 1, duration: 600, rest: 0, instruction: "Détente musculaire." }
-                            ]
-                        }
-                    }
+            {
+                id: 'mercredi',
+                title: 'Mercredi - Bas du Corps & Fessiers',
+                duration: '20 min',
+                type: 'standard',
+                items: [
+                    { name: 'Échauffement', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Flexions légères sans charge et déverrouillage des chevilles." },
+                    { name: 'Squats', type: 'reps', sets: 3, reps: '12 à 15', rest: 45, instruction: "Pieds largeur épaules, fesses vers l'arrière et le bas, poids sur les talons, buste droit." },
+                    { name: 'Fentes Arrière Alternées', type: 'reps', sets: 3, reps: '20 (10/jambe)', rest: 45, instruction: "Fais un pas vers l'arrière, genou proche du sol. Alterne gauche et droite." },
+                    { name: 'Relevé de Bassin (Glute Bridge)', type: 'reps', sets: 3, reps: '15', rest: 45, instruction: "Allongé sur le dos, pousse dans les talons et contracte fort les fessiers au sommet." }
                 ]
             },
-            D: {
-                name: "Cycle D • Cardio Vélo & Brûlage",
-                workouts: [
-                    {
-                        id: 'lundi',
-                        title: 'Lundi - Cardio Vélo Intensif & Core',
-                        hasChoice: true,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: "Échauffement Vélo", type: 'time', sets: 1, duration: 180, rest: 0, instruction: "Pédalage progressif." },
-                                { name: 'Vélo - Sprints Court', type: 'time', sets: 5, duration: 60, rest: 30, instruction: "Sprint maximal de 1 minute, puis 30 secondes lent." },
-                                { name: 'Gainage Planche (Tapis)', type: 'time', sets: 3, duration: 45, rest: 30, instruction: "Gainage solide." }
-                            ]
-                        },
-                        long: {
-                            duration: '60 min',
-                            items: [
-                                { name: "Vélo d'Appartement (Endurance Fondamentale)", type: 'time', sets: 1, duration: 1800, rest: 60, instruction: "30 minutes de vélo à rythme régulier et constant." },
-                                { name: 'Circuit Abdos & Gainage Dynamique au Tapis', type: 'reps', sets: 4, reps: '20', rest: 60, instruction: "Crunchs et touchés de talons." },
-                                { name: 'Pompes sur Tapis', type: 'reps', sets: 4, reps: '12', rest: 45, instruction: "Séries régulières." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'mardi',
-                        title: 'Mardi - Étirements & Souplesse Profonde',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Étirement Ischio-jambiers (Tapis)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Jambe tendue, buste penché en avant." },
-                                { name: 'Ouverture de Hanches', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Posture du pigeon ou fente basse." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'mercredi',
-                        title: 'Mercredi - Cuisses & Élastique Dynamique',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Activation articulaire." },
-                                { name: 'Squats avec Élastique', type: 'reps', sets: 3, reps: '15', rest: 45, instruction: "Résistance avec l'élastique." },
-                                { name: 'Fentes Arrière', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Contrôle la descente." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'jeudi',
-                        title: 'Jeudi - Vélo & Récupération Active',
-                        hasChoice: false,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Vélo Rythme Modéré', type: 'time', sets: 1, duration: 900, rest: 30, instruction: "15 min de vélo souple." },
-                                { name: 'Gainage Ventral', type: 'time', sets: 3, duration: 45, rest: 30, instruction: "Planche sur le tapis." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'vendredi',
-                        title: 'Vendredi - Full Body Cardio & Haltères',
-                        hasChoice: true,
-                        short: {
-                            duration: '20 min',
-                            items: [
-                                { name: 'Échauffement', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Mise en route." },
-                                { name: 'Thrusters Légers (Haltères)', type: 'reps', sets: 3, reps: '10', rest: 45, instruction: "Squat suivi d'une poussée des haltères au-dessus de la tête." },
-                                { name: 'Gainage Planche', type: 'time', sets: 3, duration: 45, rest: 30, instruction: "Sur le tapis." }
-                            ]
-                        },
-                        long: {
-                            duration: '60 min',
-                            items: [
-                                { name: 'Échauffement Vélo', type: 'time', sets: 1, duration: 300, rest: 30, instruction: "5 min de vélo." },
-                                { name: 'Circuit Training 4 Tours (Haltères & Tapis)', type: 'time', sets: 4, duration: 300, rest: 60, instruction: "Goblet squats, floor press, rowing et mountain climbers." },
-                                { name: 'Vélo Final (Brûlage)', type: 'time', sets: 1, duration: 600, rest: 0, instruction: "10 min de vélo régulier pour conclure." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'samedi',
-                        title: 'Samedi - Grand Circuit Vélo & Renfo',
-                        hasChoice: false,
-                        short: {
-                            duration: '45 min',
-                            type: 'circuit',
-                            warmup: { name: 'Échauffement Vélo', duration: 300, instruction: "5 min." },
-                            circuitRounds: 4,
-                            circuitRest: 60,
-                            items: [
-                                { name: 'Squats', type: 'reps', reps: '15', instruction: "Dynamiques." },
-                                { name: 'Pompes', type: 'reps', reps: '12', instruction: "Sur tapis." },
-                                { name: 'Fentes', type: 'reps', reps: '16', instruction: "Alternées." }
-                            ]
-                        }
-                    },
-                    {
-                        id: 'dimanche',
-                        title: 'Dimanche - Détente & Respiration',
-                        hasChoice: false,
-                        short: {
-                            duration: '30 min',
-                            items: [
-                                { name: 'Vélo Très Souple', type: 'time', sets: 1, duration: 600, rest: 30, instruction: "Pédalage lent." },
-                                { name: 'Étirements Globaux (Tapis)', type: 'time', sets: 1, duration: 600, rest: 0, instruction: "Détente complète." }
-                            ]
-                        }
-                    }
+            {
+                id: 'jeudi',
+                title: 'Jeudi - Cardio Doux & Abdos',
+                duration: '20 min',
+                type: 'standard',
+                items: [
+                    { name: "Vélo d'Appartement", type: 'time', sets: 1, duration: 720, rest: 30, instruction: "12 minutes à rythme modéré pour stimuler le cœur en douceur." },
+                    { name: 'Crunchs Abdominaux', type: 'reps', sets: 3, reps: '15', rest: 30, instruction: "Décolle juste les omoplates en contractant les abdos, sans tirer sur la nuque." },
+                    { name: 'Gainage Latéral (Côté Gauche)', type: 'time', sets: 2, duration: 30, rest: 15, instruction: "En appui sur l'avant-bras gauche, décolle le bassin pour former une ligne droite." },
+                    { name: 'Gainage Latéral (Côté Droit)', type: 'time', sets: 2, duration: 30, rest: 30, instruction: "Même chose sur l'avant-bras droit. Pousse fort dans le coude !" }
+                ]
+            },
+            {
+                id: 'vendredi',
+                title: 'Vendredi - Full Body Express',
+                duration: '20 min',
+                type: 'standard',
+                items: [
+                    { name: 'Échauffement', type: 'time', sets: 1, duration: 120, rest: 0, instruction: "Mouvements circulaires complets des bras et du buste." },
+                    { name: 'Développé Épaules', type: 'reps', sets: 3, reps: '10 à 12', rest: 45, instruction: "Pousse les haltères vers le haut au-dessus de la tête, sans verrouiller brutalement les coudes." },
+                    { name: 'Soulevé de Terre Jambes Tendues', type: 'reps', sets: 3, reps: '12', rest: 45, instruction: "Pousse les fesses vers l'arrière, dos bien plat, descends les haltères le long des jambes." },
+                    { name: "Écartés à l'Élastique", type: 'reps', sets: 3, reps: '15', rest: 30, instruction: "Tire l'élastique en écartant les bras pour renforcer la posture et le haut du dos." }
+                ]
+            },
+            {
+                id: 'samedi',
+                title: 'Samedi - Grand Renforcement (Circuit)',
+                duration: '45-60 min',
+                type: 'circuit',
+                warmup: { name: 'Échauffement Vélo & Mobilisation', duration: 600, instruction: "10 minutes de vélo très progressif et mobilisations globales pour bien chauffer le corps." },
+                circuitRounds: 4,
+                circuitRest: 90,
+                items: [
+                    { name: 'Goblet Squat', type: 'reps', reps: '12', instruction: "Un haltère contre la poitrine, descends les fesses en bas et en arrière, talons bien ancrés." },
+                    { name: 'Floor Press avec Haltères', type: 'reps', reps: '12', instruction: "Allongé au sol, pousse les deux haltères vers le plafond puis redescends les coudes vers le sol." },
+                    { name: 'Rowing Buste Penché', type: 'reps', reps: '12', instruction: "Buste incliné à 45°, tire les charges vers le nombril en resserrant les omoplates." },
+                    { name: 'Fentes Marchées / Sur Place', type: 'reps', reps: '20 (10/jambe)', instruction: "Fentes avec haltères, contrôle la descente, genou arrière frôlant le sol." },
+                    { name: 'Curl Biceps Debout', type: 'reps', reps: '12', instruction: "Debout, fléchis les coudes sans balancer le buste pour monter les haltères." },
+                    { name: 'Extension Triceps au-dessus de la tête', type: 'reps', reps: '12', instruction: "Haltère tenu à deux mains au-dessus de la tête, fléchis et étends les coudes." }
+                ]
+            },
+            {
+                id: 'dimanche',
+                title: 'Dimanche - Récupération & Souplesse Profonde',
+                duration: '35-45 min',
+                type: 'standard',
+                items: [
+                    { name: 'Décrassage Cardio Léger', type: 'time', sets: 1, duration: 600, rest: 30, instruction: "10 minutes de vélo à très faible résistance, pédalage ultra fluide pour dérouler les jambes." },
+                    { name: 'Étirement Ischio-jambiers', type: 'time', sets: 2, duration: 90, rest: 20, instruction: "Assis au sol, jambes tendues devant, penche doucement le buste en avant sans à-coups." },
+                    { name: 'Étirement Pectoraux & Épaules (Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Main gauche contre un cadre de porte, pivote doucement le buste vers la droite." },
+                    { name: 'Étirement Pectoraux & Épaules (Droit)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Main droite contre le cadre de porte, pivote doucement le buste vers la gauche." },
+                    { name: 'Étirement Quadriceps (Gauche)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Debout, ramène le talon gauche vers la fesse en maintaining les genoux collés." },
+                    { name: 'Étirement Quadriceps (Droit)', type: 'time', sets: 2, duration: 60, rest: 15, instruction: "Debout, ramène le talon droit vers la fesse en maintaining les genoux collés." },
+                    { name: 'Grand Dorsal (Posture de l’enfant)', type: 'time', sets: 2, duration: 120, rest: 20, instruction: "À genoux, fesses sur les talons, bras allongés loin devant au sol. Respire profondément." }
                 ]
             }
-        };
+        ];
+
+        // --- STEP BUILDER ---
+        function buildStepSequence(workoutData) {
+            const steps = [];
+
+            if (workoutData.type === 'circuit') {
+                if (workoutData.warmup) {
+                    steps.push({
+                        phase: 'PREP',
+                        title: workoutData.warmup.name,
+                        sub: 'Échauffement Initial',
+                        instruction: workoutData.warmup.instruction + " Prépare-toi, ça commence dans 15 secondes !",
+                        duration: 15
+                    });
+                    steps.push({
+                        phase: 'WORK_TIME',
+                        title: workoutData.warmup.name,
+                        sub: 'Échauffement Initial',
+                        instruction: "C'est parti pour l'échauffement !",
+                        duration: workoutData.warmup.duration
+                    });
+                }
+
+                const totalRounds = workoutData.circuitRounds || 4;
+                for (let r = 1; r <= totalRounds; r++) {
+                    workoutData.items.forEach((item, exIdx) => {
+                        steps.push({
+                            phase: 'PREP',
+                            title: item.name,
+                            sub: `Tour ${r}/${totalRounds} • Exercice ${exIdx + 1}/${workoutData.items.length}`,
+                            instruction: item.instruction + " Mise en position : 15 secondes !",
+                            duration: 15
+                        });
+
+                        if (item.type === 'reps') {
+                            steps.push({
+                                phase: 'WORK_REPS',
+                                title: item.name,
+                                sub: `Tour ${r}/${totalRounds} • Exercice ${exIdx + 1}/${workoutData.items.length}`,
+                                instruction: item.instruction,
+                                reps: item.reps
+                            });
+                        } else {
+                            steps.push({
+                                phase: 'WORK_TIME',
+                                title: item.name,
+                                sub: `Tour ${r}/${totalRounds} • Exercice ${exIdx + 1}/${workoutData.items.length}`,
+                                instruction: item.instruction,
+                                duration: item.duration
+                            });
+                        }
+                    });
+
+                    if (r < totalRounds) {
+                        steps.push({
+                            phase: 'REST',
+                            title: `Repos de Fin de Tour ${r}`,
+                            sub: `Récupération Circuit (${workoutData.circuitRest || 90}s)`,
+                            instruction: `Super tour ${r} complété ! Repose-toi bien avant le tour ${r + 1}.`,
+                            duration: workoutData.circuitRest || 90
+                        });
+                    }
+                }
+
+            } else {
+                workoutData.items.forEach((item) => {
+                    const totalSets = item.sets || 1;
+                    
+                    steps.push({
+                        phase: 'PREP',
+                        title: item.name,
+                        sub: `Série 1/${totalSets}`,
+                        instruction: `Prochain exercice : ${item.name}. ${item.instruction} Prépare-toi !`,
+                        duration: 15
+                    });
+
+                    for (let s = 1; s <= totalSets; s++) {
+                        if (s > 1) {
+                            steps.push({
+                                phase: 'REST',
+                                title: `Repos - ${item.name}`,
+                                sub: `Entre Série ${s-1} et Série ${s}`,
+                                instruction: `Souffle bien ! Repos pendant ${item.rest || 30} secondes.`,
+                                duration: item.rest || 30
+                            });
+                        }
+
+                        if (item.type === 'reps') {
+                            steps.push({
+                                phase: 'WORK_REPS',
+                                title: item.name,
+                                sub: `Série ${s}/${totalSets}`,
+                                instruction: item.instruction,
+                                reps: item.reps
+                            });
+                        } else {
+                            steps.push({
+                                phase: 'WORK_TIME',
+                                title: item.name,
+                                sub: `Série ${s}/${totalSets}`,
+                                instruction: item.instruction,
+                                duration: item.duration
+                            });
+                        }
+                    }
+                });
+            }
+
+            return steps;
+        }
 
         // --- APP ENGINE STATE ---
         let stepsQueue = [];
@@ -613,7 +314,6 @@
         let audioMuted = false;
         let wakeLock = null;
         let audioCtx = null;
-        let selectedDayData = null;
 
         // --- AUDIO HYBRID FOR SILENT MODE BYPASS ---
         function initAudioContext() {
@@ -666,17 +366,9 @@
 
         // DOM elements
         const viewSelect = document.getElementById('view-select');
-        const viewDurationChoice = document.getElementById('view-duration-choice');
         const viewWorkout = document.getElementById('view-workout');
         const viewFinished = document.getElementById('view-finished');
         const daysList = document.getElementById('days-list');
-
-        const cycleSubtitle = document.getElementById('cycle-subtitle');
-        const btnCycleToggle = document.getElementById('btn-cycle-toggle');
-        const choiceDayTitle = document.getElementById('choice-day-title');
-        const btnFormatShort = document.getElementById('btn-format-short');
-        const btnFormatLong = document.getElementById('btn-format-long');
-        const btnBackToSelect = document.getElementById('btn-back-to-select');
 
         const stepBadge = document.getElementById('step-badge');
         const progressBadge = document.getElementById('progress-badge');
@@ -725,87 +417,24 @@
             } else {
                 initAudioContext();
                 btnAudioToggle.innerText = "🔊 Sound On";
-                btnAudioToggle.className = "text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-full text-indigo-300 font-medium";
+                btnAudioToggle.className = "text-xs bg-slate-700 px-3 py-1.5 rounded-full text-indigo-300 font-medium";
             }
-        };
-
-        // Toggle Cycles A -> B -> C -> D -> A
-        btnCycleToggle.onclick = () => {
-            const currentIndex = cycleKeys.indexOf(currentCycle);
-            const nextIndex = (currentIndex + 1) % cycleKeys.length;
-            currentCycle = cycleKeys[nextIndex];
-
-            cycleSubtitle.innerText = cycleNames[currentCycle];
-            
-            // Update button label to show next target cycle
-            const nextTarget = cycleKeys[(nextIndex + 1) % cycleKeys.length];
-            btnCycleToggle.innerText = `🔄 Cycle ${nextTarget}`;
-
-            populateMenu();
         };
 
         // Populate Day Selector Menu
-        function populateMenu() {
-            daysList.innerHTML = '';
-            const currentProg = programs[currentCycle];
-
-            currentProg.workouts.forEach(w => {
-                const btn = document.createElement('button');
-                btn.className = "bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition-all active:scale-95 flex justify-between items-center text-left";
-                
-                let durationText = w.short.duration;
-                if (w.hasChoice) durationText = "20 min ou 1h";
-                else if (w.short.type === 'circuit') durationText = w.short.duration;
-
-                btn.innerHTML = `
-                    <div>
-                        <div class="text-indigo-300 font-bold text-sm sm:text-base">${w.title}</div>
-                        <div class="text-[11px] sm:text-xs text-slate-400 font-normal mt-0.5">⏱️ ${durationText} ${w.hasChoice ? '✨ (Choix)' : ''}</div>
-                    </div>
-                    <span class="text-indigo-400 text-base sm:text-lg">▶</span>
-                `;
-
-                btn.onclick = () => handleDayClick(w);
-                daysList.appendChild(btn);
-            });
-        }
-
-        function handleDayClick(workoutData) {
-            initAudioContext();
-            if (workoutData.hasChoice) {
-                selectedDayData = workoutData;
-                choiceDayTitle.innerText = workoutData.title;
-                viewSelect.classList.add('hidden');
-                viewSelect.classList.remove('flex');
-                viewDurationChoice.classList.remove('hidden');
-                viewDurationChoice.classList.add('flex');
-            } else {
-                startWorkout(workoutData.short);
-            }
-        }
-
-        btnFormatShort.onclick = () => {
-            if (selectedDayData) {
-                viewDurationChoice.classList.add('hidden');
-                viewDurationChoice.classList.remove('flex');
-                startWorkout(selectedDayData.short);
-            }
-        };
-
-        btnFormatLong.onclick = () => {
-            if (selectedDayData && selectedDayData.long) {
-                viewDurationChoice.classList.add('hidden');
-                viewDurationChoice.classList.remove('flex');
-                startWorkout(selectedDayData.long);
-            }
-        };
-
-        btnBackToSelect.onclick = () => {
-            viewDurationChoice.classList.add('hidden');
-            viewDurationChoice.classList.remove('flex');
-            viewSelect.classList.remove('hidden');
-            viewSelect.classList.add('flex');
-        };
+        rawWorkouts.forEach(w => {
+            const btn = document.createElement('button');
+            btn.className = "bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition-all active:scale-95 flex justify-between items-center text-left";
+            btn.innerHTML = `
+                <div>
+                    <div class="text-indigo-300 font-bold text-sm sm:text-base">${w.title}</div>
+                    <div class="text-[11px] sm:text-xs text-slate-400 font-normal mt-0.5">⏱️ ${w.duration}</div>
+                </div>
+                <span class="text-indigo-400 text-base sm:text-lg">▶</span>
+            `;
+            btn.onclick = () => startWorkout(w);
+            daysList.appendChild(btn);
+        });
 
         function resetToMenu() {
             clearInterval(timerInterval);
@@ -814,142 +443,27 @@
             stepsQueue = [];
             currentStepIdx = 0;
             isPaused = false;
-            selectedDayData = null;
 
             viewWorkout.classList.add('hidden');
             viewWorkout.classList.remove('flex');
             viewFinished.classList.add('hidden');
             viewFinished.classList.remove('flex');
-            viewDurationChoice.classList.add('hidden');
-            viewDurationChoice.classList.remove('flex');
             
             viewSelect.classList.remove('hidden');
             viewSelect.classList.add('flex');
         }
 
-        // --- STEP BUILDER ---
-        function buildStepSequence(workoutConfig) {
-            const steps = [];
-
-            if (workoutConfig.type === 'circuit') {
-                if (workoutConfig.warmup) {
-                    steps.push({
-                        phase: 'PREP',
-                        title: workoutConfig.warmup.name,
-                        sub: 'Échauffement Initial',
-                        instruction: workoutConfig.warmup.instruction + " Prépare-toi, ça commence dans 15 secondes !",
-                        duration: 15
-                    });
-                    steps.push({
-                        phase: 'WORK_TIME',
-                        title: workoutConfig.warmup.name,
-                        sub: 'Échauffement Initial',
-                        instruction: "C'est parti pour l'échauffement !",
-                        duration: workoutConfig.warmup.duration
-                    });
-                }
-
-                const totalRounds = workoutConfig.circuitRounds || 4;
-                for (let r = 1; r <= totalRounds; r++) {
-                    workoutConfig.items.forEach((item, exIdx) => {
-                        steps.push({
-                            phase: 'PREP',
-                            title: item.name,
-                            sub: `Tour ${r}/${totalRounds} • Exercice ${exIdx + 1}/${workoutConfig.items.length}`,
-                            instruction: item.instruction + " Mise en position : 15 secondes !",
-                            duration: 15
-                        });
-
-                        if (item.type === 'reps') {
-                            steps.push({
-                                phase: 'WORK_REPS',
-                                title: item.name,
-                                sub: `Tour ${r}/${totalRounds} • Exercice ${exIdx + 1}/${workoutConfig.items.length}`,
-                                instruction: item.instruction,
-                                reps: item.reps
-                            });
-                        } else {
-                            steps.push({
-                                phase: 'WORK_TIME',
-                                title: item.name,
-                                sub: `Tour ${r}/${totalRounds} • Exercice ${exIdx + 1}/${workoutConfig.items.length}`,
-                                instruction: item.instruction,
-                                duration: item.duration
-                            });
-                        }
-                    });
-
-                    if (r < totalRounds) {
-                        steps.push({
-                            phase: 'REST',
-                            title: `Repos de Fin de Tour ${r}`,
-                            sub: `Récupération Circuit (${workoutConfig.circuitRest || 90}s)`,
-                            instruction: `Super tour ${r} complété ! Repose-toi bien avant le tour ${r + 1}.`,
-                            duration: workoutConfig.circuitRest || 90
-                        });
-                    }
-                }
-
-            } else {
-                workoutConfig.items.forEach((item) => {
-                    const totalSets = item.sets || 1;
-                    
-                    steps.push({
-                        phase: 'PREP',
-                        title: item.name,
-                        sub: `Série 1/${totalSets}`,
-                        instruction: `Prochain exercice : ${item.name}. ${item.instruction} Prépare-toi !`,
-                        duration: 15
-                    });
-
-                    for (let s = 1; s <= totalSets; s++) {
-                        if (s > 1) {
-                            steps.push({
-                                phase: 'REST',
-                                title: `Repos - ${item.name}`,
-                                sub: `Entre Série ${s-1} et Série ${s}`,
-                                instruction: `Souffle bien ! Repos pendant ${item.rest || 30} secondes.`,
-                                duration: item.rest || 30
-                            });
-                        }
-
-                        if (item.type === 'reps') {
-                            steps.push({
-                                phase: 'WORK_REPS',
-                                title: item.name,
-                                sub: `Série ${s}/${totalSets}`,
-                                instruction: item.instruction,
-                                reps: item.reps
-                            });
-                        } else {
-                            steps.push({
-                                phase: 'WORK_TIME',
-                                title: item.name,
-                                sub: `Série ${s}/${totalSets}`,
-                                instruction: item.instruction,
-                                duration: item.duration
-                            });
-                        }
-                    }
-                });
-            }
-
-            return steps;
-        }
-
-        function startWorkout(workoutConfig) {
+        function startWorkout(workoutData) {
             initAudioContext();
             speak("C'est parti !");
             requestWakeLock();
 
-            stepsQueue = buildStepSequence(workoutConfig);
+            stepsQueue = buildStepSequence(workoutData);
             currentStepIdx = 0;
             isPaused = false;
 
             viewSelect.classList.add('hidden');
             viewSelect.classList.remove('flex');
-            viewDurationChoice.classList.add('hidden');
-            viewDurationChoice.classList.remove('flex');
             viewFinished.classList.add('hidden');
             viewWorkout.classList.remove('hidden');
             viewWorkout.classList.add('flex');
@@ -1106,9 +620,6 @@
             viewFinished.classList.remove('hidden');
             viewFinished.classList.add('flex');
         }
-
-        // Initial menu population
-        populateMenu();
 
     </script>
 </body>
